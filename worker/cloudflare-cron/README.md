@@ -31,3 +31,5 @@ npm run tail
 ```
 
 Cloudflare's free tier covers 10K scheduled invocations/day; we use ~1-4.
+
+> **Superseded (2026-11-07).** The daily `POST /api/cron/sector-snapshot` now runs from `datum-scheduler` (job `lendingSectorSnapshot`, secret `LENDING_CRON_SECRET` = this app's `CRON_SECRET`). This Worker is kept for reference; delete the deployed `lending-terminal-cron` from its account.
