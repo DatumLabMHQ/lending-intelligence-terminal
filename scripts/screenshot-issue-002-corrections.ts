@@ -9,7 +9,7 @@
  *   (d) §08 forward-look first + third questions
  *
  *   npm exec tsx scripts/screenshot-issue-002-corrections.ts -- \
- *     --url=https://lending-intelligence-terminal-q4jnsbqe5.vercel.app/reports/2026-05-may
+ *     --url=https://lending-intelligence-terminal.datumlabs.workers.dev/reports/2026-05-may
  */
 import path from "node:path"
 import { promises as fs } from "node:fs"
@@ -17,7 +17,7 @@ import { promises as fs } from "node:fs"
 async function main() {
   const urlArg = process.argv.find((a) => a.startsWith("--url="))?.slice("--url=".length)
   const outArg = process.argv.find((a) => a.startsWith("--out="))?.slice("--out=".length)
-  const url = urlArg ?? "https://lending-intelligence-terminal-q4jnsbqe5.vercel.app/reports/2026-05-may"
+  const url = urlArg ?? "https://lending-intelligence-terminal.datumlabs.workers.dev/reports/2026-05-may"
   const outDir = (outArg && path.isAbsolute(outArg))
     ? outArg
     : path.join(process.cwd(), outArg ?? "tmp/issue-002-corrections")

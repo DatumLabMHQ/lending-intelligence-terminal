@@ -9,7 +9,7 @@ import { promises as fs } from "node:fs"
 
 async function main() {
   const url = process.argv.find((a) => a.startsWith("--url="))?.slice("--url=".length)
-    ?? "https://lending-intelligence-terminal.vercel.app/"
+    ?? "https://lending-intelligence-terminal.datumlabs.workers.dev/"
   const outDir = path.join(process.cwd(), "tmp", "subscribe-success")
   await fs.mkdir(outDir, { recursive: true })
 

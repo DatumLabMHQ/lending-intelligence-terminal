@@ -186,7 +186,7 @@ export default async function OverviewPage() {
           until a real issue is ready to publish). */}
       <CiteThisPage
         pageTitle="Sector Overview"
-        pageUrl="https://lending-intelligence-terminal.vercel.app/"
+        pageUrl="https://lending-intelligence-terminal.datumlabs.workers.dev/"
       />
 
       {/* As-of footer — Sector Overview reads from the daily snapshot

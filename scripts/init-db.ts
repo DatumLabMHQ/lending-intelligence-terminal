@@ -12,6 +12,7 @@ import * as dotenv from "dotenv"
 
 dotenv.config()
 
+import { Pool } from "@neondatabase/serverless"
 import { rawSql, closePool } from "../lib/db"
 
 async function main() {
@@ -25,7 +26,16 @@ async function main() {
   const sql = await readFile(schemaPath, "utf-8")
 
   console.log(`Applying schema from ${schemaPath}...`)
-  await rawSql(sql)
+  // Multi-statement schema needs the WebSocket Pool (Node script only; the
+  // app itself uses the HTTP driver in lib/db.ts).
+  const pool = new Pool({
+    connectionString: process.env.DATABASE_URL.replace(/&?channel_binding=[^&]*/g, ""),
+  })
+  try {
+    await pool.query(sql)
+  } finally {
+    await pool.end()
+  }
   console.log("Schema applied.")
 
   const rows = await rawSql<{ slug: string; name: string }>(

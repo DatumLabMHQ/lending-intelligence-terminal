@@ -33,11 +33,12 @@ export const revalidate = 600
 export const maxDuration = 60
 
 interface PageProps {
-  params: { poolId: string }
+  params: Promise<{ poolId: string }>
 }
 
 export default async function MarketDetailPage({ params }: PageProps) {
-  const detail = await loadMarketDetail(params.poolId)
+  const { poolId } = await params
+  const detail = await loadMarketDetail(poolId)
   if (!detail) {
     notFound()
   }

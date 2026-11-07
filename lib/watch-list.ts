@@ -5,8 +5,7 @@
  * support needed; the owner edits this file per edition and we prefer
  * a tight, predictable schema over rich formatting.
  */
-import { readFile } from "node:fs/promises"
-import path from "node:path"
+import { WATCH_MD } from "@/lib/generated/content-bundle"
 
 export interface WatchItem {
   title: string
@@ -22,15 +21,10 @@ export interface WatchList {
   items: WatchItem[]
 }
 
-const CONTENT_PATH = path.join(process.cwd(), "content", "watch.md")
-
 export async function loadWatchList(): Promise<WatchList | null> {
-  let raw: string
-  try {
-    raw = await readFile(CONTENT_PATH, "utf-8")
-  } catch {
-    return null
-  }
+  // content/watch.md is bundled at build time (scripts/bundle-content.mjs).
+  const raw = WATCH_MD
+  if (raw == null) return null
 
   const lines = raw.split(/\r?\n/)
   let title = "What to Watch"

@@ -16,7 +16,7 @@ import { getAllIssues } from "@/lib/reports/getAllIssues"
 export const dynamic = "force-static"
 export const revalidate = 3600
 
-const SITE_URL = "https://lending-intelligence-terminal.vercel.app"
+const SITE_URL = "https://lending-intelligence-terminal.datumlabs.workers.dev"
 
 function escapeXml(s: string): string {
   return s

@@ -15,7 +15,7 @@
  *   - Server-side gives us a clean place to add basic-validation,
  *     rate-limiting, and a single place to swap providers later.
  *
- * Required Vercel env vars (Production + Preview):
+ * Required Worker secrets (Production + Preview):
  *   BEEHIIV_API_KEY         — bearer token from Beehiiv dashboard →
  *                             Settings → Integrations → API
  *   BEEHIIV_PUBLICATION_ID  — publication ID, format "pub_XXXXXXXX".

@@ -42,10 +42,11 @@ function normalizeView(raw: string | undefined): CompareView {
 export default async function ComparePage({
   searchParams,
 }: {
-  searchParams: SearchParams
+  searchParams: Promise<SearchParams>
 }) {
-  const asset = normalizeAsset(searchParams.asset)
-  const view = normalizeView(searchParams.view)
+  const sp = await searchParams
+  const asset = normalizeAsset(sp.asset)
+  const view = normalizeView(sp.view)
 
   const response = await loadCompareForAsset(asset)
   // History only needed for the Yields view; load it conditionally so the
@@ -89,7 +90,7 @@ export default async function ComparePage({
 
       <CiteThisPage
         pageTitle={`Cross-Protocol Compare · ${asset}`}
-        pageUrl="https://lending-intelligence-terminal.vercel.app/compare"
+        pageUrl="https://lending-intelligence-terminal.datumlabs.workers.dev/compare"
       />
     </div>
   )

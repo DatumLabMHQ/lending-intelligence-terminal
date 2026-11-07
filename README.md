@@ -14,7 +14,7 @@ Product of Datum Labs. Companion to the Liquidator Economy terminal.
 
 ## Stack
 
-- Next.js 14 (App Router) + TypeScript + Tailwind
+- Next.js 15 (App Router) + TypeScript + Tailwind, built with [vinext](https://github.com/cloudflare/vinext) for Cloudflare Workers
 - Neon Postgres (`@neondatabase/serverless`)
 - viem for on-chain reads
 - Recharts for visualization
@@ -27,8 +27,30 @@ cp .env.example .env
 # fill in DATABASE_URL and ETH_RPC_URL
 npm install
 npm run db:init     # applies lib/schema.sql to the Neon DB
-npm run dev         # http://localhost:3000
+npm run dev         # http://localhost:3000 (vite; `npm run dev:next` for plain Next)
 ```
+
+## Deploy (Cloudflare Workers)
+
+The app runs on the `lending-intelligence-terminal` Worker
+(https://lending-intelligence-terminal.datumlabs.workers.dev), configured in
+`cloudflare.config.ts` and `vite.config.ts`.
+
+```bash
+npx cf auth login
+./scripts/set-secrets.sh   # DATABASE_URL, ETH_RPC_URL, LIQUIDATOR_DATABASE_URL, CRON_SECRET, BEEHIIV_*
+npm run deploy             # vite build + vinext-cloudflare deploy
+```
+
+Workers have no project filesystem at request time, so `content/reports/*.mdx`,
+`content/watch.md` and the `public/reports` file list are bundled into
+`lib/generated/content-bundle.ts` by `scripts/bundle-content.mjs` (runs
+automatically before `dev`/`build`). Editing content needs a redeploy.
+
+The daily sector snapshot is triggered by the separate `lending-terminal-cron`
+Worker in `worker/cloudflare-cron/` (its `BASE_URL` must point at this Worker).
+`alerts/` is the separate `datumlabs-alerts` Worker. Both deploy on their own
+with `wrangler deploy` from their directories.
 
 ## Phase 1 scope
 

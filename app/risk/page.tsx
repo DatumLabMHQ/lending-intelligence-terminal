@@ -157,7 +157,7 @@ export default async function RiskPage() {
 
       {/* Footer link to the standalone Liquidator Economy dashboard for deeper liq stats. */}
       <a
-        href="https://liquidator-economy-dashboard.vercel.app"
+        href="https://liquidator-economy-dashboard.datumlabs.workers.dev"
         target="_blank"
         rel="noreferrer"
         className="tui-card bg-card-bg border border-card-border rounded p-4 flex items-center justify-between gap-3"
@@ -210,7 +210,7 @@ export default async function RiskPage() {
 
       <CiteThisPage
         pageTitle="Collateral & Stress Risk"
-        pageUrl="https://lending-intelligence-terminal.vercel.app/risk"
+        pageUrl="https://lending-intelligence-terminal.datumlabs.workers.dev/risk"
       />
       <AsOfFooter
         timestamp={risk.fetchedAt}

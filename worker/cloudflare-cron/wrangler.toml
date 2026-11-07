@@ -15,7 +15,7 @@ crons = ["0 1 * * *"]
 # update here and re-run `wrangler deploy`, or override per-environment
 # via `wrangler secret put BASE_URL`.
 [vars]
-BASE_URL = "https://lending-intelligence-terminal.vercel.app"
+BASE_URL = "https://lending-intelligence-terminal.datumlabs.workers.dev"
 
 # Observability — lightweight, free tier friendly.
 [observability]

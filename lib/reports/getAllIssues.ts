@@ -7,23 +7,14 @@
  *  - generateStaticParams for /reports/[slug]
  *  - /reports/feed.xml RSS generator
  */
-import { promises as fs } from "node:fs"
-import path from "node:path"
+import { REPORT_FILES } from "@/lib/generated/content-bundle"
 import { getIssueBySlug } from "./getIssueBySlug"
 import type { IssueRecord } from "./types"
 
-const REPORTS_DIR = path.join(process.cwd(), "content", "reports")
-
 export async function getAllIssues(): Promise<IssueRecord[]> {
-  let entries: string[]
-  try {
-    entries = await fs.readdir(REPORTS_DIR)
-  } catch {
-    return []
-  }
-  const slugs = entries
-    .filter((f) => f.endsWith(".mdx"))
-    .map((f) => f.replace(/\.mdx$/, ""))
+  // MDX sources are bundled at build time (scripts/bundle-content.mjs):
+  // Workers have no project filesystem to readdir at request time.
+  const slugs = Object.keys(REPORT_FILES)
   const results = await Promise.all(slugs.map((s) => getIssueBySlug(s)))
   // Drop nulls (shouldn't happen since the slug came from readdir).
   const issues = results.filter((r): r is IssueRecord => r !== null)

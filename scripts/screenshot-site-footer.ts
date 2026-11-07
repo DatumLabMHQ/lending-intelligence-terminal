@@ -10,7 +10,7 @@ import { promises as fs } from "node:fs"
 
 async function main() {
   const url = process.argv.find((a) => a.startsWith("--url="))?.slice("--url=".length)
-    ?? "https://lending-intelligence-terminal.vercel.app/"
+    ?? "https://lending-intelligence-terminal.datumlabs.workers.dev/"
   const outArg = process.argv.find((a) => a.startsWith("--out="))?.slice("--out=".length)
   const outPath = (outArg && path.isAbsolute(outArg))
     ? outArg

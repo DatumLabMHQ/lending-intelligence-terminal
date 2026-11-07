@@ -4,7 +4,7 @@
  * user's sanity-check pass before publication.
  *
  *   npm run screenshot-issue-002-charts -- \
- *     --url=https://lending-intelligence-terminal-ju1a114be.vercel.app/reports/2026-05-may
+ *     --url=https://lending-intelligence-terminal.datumlabs.workers.dev/reports/2026-05-may
  *
  * Uses the same Playwright/Chromium dev-only dep render-covers.ts uses.
  */
@@ -24,7 +24,7 @@ const ANCHORS: ChartAnchor[] = [
 
 function parseArgs(argv: string[]): { url: string; outDir: string } {
   const url = argv.find((a) => a.startsWith("--url="))?.slice("--url=".length)
-    ?? "https://lending-intelligence-terminal-ju1a114be.vercel.app/reports/2026-05-may"
+    ?? "https://lending-intelligence-terminal.datumlabs.workers.dev/reports/2026-05-may"
   const outDir = argv.find((a) => a.startsWith("--out="))?.slice("--out=".length)
     ?? path.join(process.cwd(), "tmp", "issue-002-chart-screenshots")
   return { url, outDir }

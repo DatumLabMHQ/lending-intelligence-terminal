@@ -8,7 +8,7 @@ import { promises as fs } from "node:fs"
 async function main() {
   const urlArg = process.argv.find((a) => a.startsWith("--url="))?.slice("--url=".length)
   const outArg = process.argv.find((a) => a.startsWith("--out="))?.slice("--out=".length)
-  const url = urlArg ?? "https://lending-intelligence-terminal-8yttnnmtb.vercel.app/reports"
+  const url = urlArg ?? "https://lending-intelligence-terminal.datumlabs.workers.dev/reports"
   const outPath = (outArg && path.isAbsolute(outArg))
     ? outArg
     : path.join(process.cwd(), outArg ?? "tmp/reports-index.png")

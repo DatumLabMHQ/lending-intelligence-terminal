@@ -1,17 +1,20 @@
-import { Pool } from "@neondatabase/serverless"
+import { neon, type NeonQueryFunction } from "@neondatabase/serverless"
 
-let pool: Pool | null = null
+// Neon HTTP driver: stateless per query. A module-scope WebSocket Pool
+// breaks on Cloudflare Workers after the first request (sockets can't be
+// reused across requests), so we don't keep one.
+let client: NeonQueryFunction<false, false> | null = null
 
-function getPool(): Pool {
-  if (!pool) {
+function getClient(): NeonQueryFunction<false, false> {
+  if (!client) {
     if (!process.env.DATABASE_URL) {
       throw new Error("DATABASE_URL environment variable is required")
     }
     // Neon's serverless driver doesn't accept the channel_binding param some URLs include.
     const dbUrl = process.env.DATABASE_URL.replace(/&?channel_binding=[^&]*/g, "")
-    pool = new Pool({ connectionString: dbUrl })
+    client = neon(dbUrl)
   }
-  return pool
+  return client
 }
 
 /**
@@ -29,20 +32,16 @@ export async function sql<T = any>(
     query += str
     if (i < values.length) query += `$${i + 1}`
   })
-  const res = await getPool().query(query, values)
-  return res.rows as T[]
+  return (await getClient().query(query, values)) as T[]
 }
 
-/** Direct string execution for dynamic SQL (schema init, migrations, etc.) */
+/** Direct string execution for dynamic SQL (single statement; the HTTP
+ *  driver does not run multi-statement scripts, see scripts/init-db.ts). */
 export async function rawSql<T = any>(text: string, params?: any[]): Promise<T[]> {
-  const res = await getPool().query(text, params)
-  return res.rows as T[]
+  return (await getClient().query(text, params ?? [])) as T[]
 }
 
-/** Close the pool — only call this at the end of a script/worker cycle, not in request handlers. */
+/** Kept for scripts that call it. The HTTP driver holds no connections. */
 export async function closePool(): Promise<void> {
-  if (pool) {
-    await pool.end()
-    pool = null
-  }
+  client = null
 }

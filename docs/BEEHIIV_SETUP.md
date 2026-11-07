@@ -2,7 +2,7 @@
 
 The subscribe form in the site footer and on each report page now POSTs
 to a Next.js API route at `/api/subscribe`, which forwards the email to
-Beehiiv's publication API. To complete the wiring, two Vercel
+Beehiiv's publication API. To complete the wiring, two Worker
 environment variables need to be set.
 
 Until they are set, the form falls back to the existing
@@ -45,49 +45,22 @@ look at the URL bar.
 
 ---
 
-## Step 2 — Add the secrets to Vercel
+## Step 2 — Add the secrets to the Worker
 
-In the project's Vercel dashboard:
-
-1. Go to **Settings → Environment Variables**.
-2. Add the first variable:
-   - **Name:** `BEEHIIV_API_KEY`
-   - **Value:** the API key from Step 1A
-   - **Environments:** check **Production** and **Preview**. Leave
-     Development unchecked (you don't want every local dev server
-     pushing to your production list).
-3. Click **Save**.
-4. Repeat for the second:
-   - **Name:** `BEEHIIV_PUBLICATION_ID`
-   - **Value:** the `pub_...` id from Step 1B
-   - **Environments:** Production + Preview
-5. Click **Save**.
-
-Quick CLI alternative (run from the repo root, requires `vercel login`):
+From the repo root (after `npx cf auth login`):
 
 ```bash
-vercel env add BEEHIIV_API_KEY production
-# paste the key, hit enter
-vercel env add BEEHIIV_API_KEY preview
-# paste again
-
-vercel env add BEEHIIV_PUBLICATION_ID production
-# paste the pub_... id
-vercel env add BEEHIIV_PUBLICATION_ID preview
+npx cf workers secrets update BEEHIIV_API_KEY --worker lending-intelligence-terminal --type secret_text --text "<key>"
+npx cf workers secrets update BEEHIIV_PUBLICATION_ID --worker lending-intelligence-terminal --type secret_text --text "<pub_...>"
 ```
+
+Or run `./scripts/set-secrets.sh` and press Enter to skip the others.
 
 ---
 
 ## Step 3 — Redeploy
 
-Environment variable changes only take effect on a new build:
-
-```bash
-vercel --prod --yes
-```
-
-Or push any commit — Vercel auto-builds on pushes to the production
-branch.
+Worker secrets apply to the next deployment: `npm run deploy`.
 
 ---
 
@@ -151,12 +124,12 @@ If you want to flip either of these, edit `app/api/subscribe/route.ts`
 
 **Form shows the mail client opening, not "Subscribed"**
 → One or both env vars aren't readable by the API route. Check the
-Vercel dashboard, confirm both are set for the environment your build
-is running on (Production vs Preview), and redeploy.
+Worker's secrets (`npx cf workers secrets list --worker lending-intelligence-terminal`)
+and redeploy.
 
 **Form shows "We couldn't add that email right now"**
-→ Beehiiv returned a non-success status. Open the Vercel project's
-**Logs** tab and look for entries prefixed `[subscribe] Beehiiv`. The
+→ Beehiiv returned a non-success status. Open the Worker's
+**Logs** in the Cloudflare dashboard and look for entries prefixed `[subscribe] Beehiiv`. The
 log line includes Beehiiv's response body which usually says exactly
 what's wrong (invalid API key, publication not found, rate limit, etc.).
 
