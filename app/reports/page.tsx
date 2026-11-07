@@ -18,19 +18,18 @@
  * when the static PNG isn't built yet (the script renders covers
  * locally via Playwright; until then the hero+grid use the gradient).
  */
-import path from "node:path"
-import { promises as fs } from "node:fs"
 import Link from "next/link"
 import type { Metadata } from "next"
 import { getAllIssues } from "@/lib/reports/getAllIssues"
 import { NewsletterSignup } from "@/components/report/NewsletterSignup"
 import { SupportPanel } from "@/components/report/SupportPanel"
 import type { IssueRecord } from "@/lib/reports/types"
+import { PUBLIC_REPORT_FILES } from "@/lib/generated/content-bundle"
 
 export const dynamic = "force-static"
 export const revalidate = 3600
 
-const SITE_URL = "https://lending-intelligence-terminal.vercel.app"
+const SITE_URL = "https://lending-intelligence-terminal.datumlabs.workers.dev"
 
 export async function generateMetadata(): Promise<Metadata> {
   const issues = await getAllIssues()
@@ -44,9 +43,8 @@ export async function generateMetadata(): Promise<Metadata> {
     alternates: {
       canonical: `${SITE_URL}/reports`,
       types: {
-        "application/rss+xml": [
-          { url: `${SITE_URL}/reports/feed.xml`, title: "DatumLabs Reports" },
-        ],
+        // vinext only accepts string | URL here (no {url,title}[] descriptors).
+        "application/rss+xml": `${SITE_URL}/reports/feed.xml`,
       },
     },
     openGraph: {
@@ -71,13 +69,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 async function coverImageAvailable(coverPath: string): Promise<boolean> {
   if (!coverPath || !coverPath.startsWith("/")) return false
-  const abs = path.join(process.cwd(), "public", coverPath.replace(/^\//, ""))
-  try {
-    await fs.access(abs)
-    return true
-  } catch {
-    return false
-  }
+  // public/reports listing is bundled at build time (no runtime fs on Workers).
+  return PUBLIC_REPORT_FILES.has(coverPath)
 }
 
 function fmtPublicationDate(s: string): string {

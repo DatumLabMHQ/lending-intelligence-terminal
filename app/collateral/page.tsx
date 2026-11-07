@@ -72,7 +72,7 @@ export default async function CollateralPage() {
 
       <CiteThisPage
         pageTitle="Collateral Landscape"
-        pageUrl="https://lending-intelligence-terminal.vercel.app/collateral"
+        pageUrl="https://lending-intelligence-terminal.datumlabs.workers.dev/collateral"
       />
       <AsOfFooter
         timestamp={Math.floor(Date.now() / 1000)}

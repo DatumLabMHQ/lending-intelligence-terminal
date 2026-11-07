@@ -23,7 +23,7 @@ export {
   type IssueHookCopy,
 } from "./editorial"
 
-const SITE_URL = "https://lending-intelligence-terminal.vercel.app"
+const SITE_URL = "https://lending-intelligence-terminal.datumlabs.workers.dev"
 const FRESHNESS_DAYS = 14
 
 export interface FeaturedIssue {

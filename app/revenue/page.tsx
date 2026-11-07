@@ -133,7 +133,7 @@ export default async function RevenuePage() {
 
       <CiteThisPage
         pageTitle="Revenue & Protocol Economics"
-        pageUrl="https://lending-intelligence-terminal.vercel.app/revenue"
+        pageUrl="https://lending-intelligence-terminal.datumlabs.workers.dev/revenue"
       />
       <AsOfFooter
         timestamp={decomp.fetchedAt}

@@ -55,8 +55,8 @@ interface SearchParams {
   p?: string
 }
 
-export default async function ProtocolsPage({ searchParams }: { searchParams: SearchParams }) {
-  const slug = searchParams.p ?? PROTOCOLS[0].slug
+export default async function ProtocolsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const slug = (await searchParams).p ?? PROTOCOLS[0].slug
   const cfg = PROTOCOL_BY_SLUG[slug]
 
   if (!cfg) {

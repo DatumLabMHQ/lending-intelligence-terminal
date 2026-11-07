@@ -27,7 +27,7 @@ const THEME_INIT_SCRIPT = `
 })();
 `
 
-const SITE_URL = "https://lending-intelligence-terminal.vercel.app"
+const SITE_URL = "https://lending-intelligence-terminal.datumlabs.workers.dev"
 
 export async function generateMetadata(): Promise<Metadata> {
   // Default OG image falls back to the latest issue's social card so a
@@ -63,9 +63,8 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     alternates: {
       types: {
-        "application/rss+xml": [
-          { url: "/reports/feed.xml", title: "State of DeFi Lending — DatumLabs" },
-        ],
+        // vinext only accepts string | URL here (no {url,title}[] descriptors).
+        "application/rss+xml": "/reports/feed.xml",
       },
     },
     openGraph: ogImage

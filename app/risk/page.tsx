@@ -210,7 +210,7 @@ export default async function RiskPage() {
 
       <CiteThisPage
         pageTitle="Collateral & Stress Risk"
-        pageUrl="https://lending-intelligence-terminal.vercel.app/risk"
+        pageUrl="https://lending-intelligence-terminal.datumlabs.workers.dev/risk"
       />
       <AsOfFooter
         timestamp={risk.fetchedAt}

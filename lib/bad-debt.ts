@@ -27,8 +27,8 @@
  * tally.
  */
 
-import fs from "node:fs/promises"
-import path from "node:path"
+// Imported statically so it is bundled (no runtime filesystem on Workers).
+import registryJson from "../content/bad-debt-incidents.json"
 
 export interface BadDebtIncident {
   date: string
@@ -50,15 +50,9 @@ export interface BadDebtSummary {
   incidentCount: number
 }
 
-const REGISTRY_PATH = "content/bad-debt-incidents.json"
-
 async function loadRegistry(): Promise<BadDebtIncident[]> {
   try {
-    const file = await fs.readFile(
-      path.join(process.cwd(), REGISTRY_PATH),
-      "utf-8",
-    )
-    const raw = JSON.parse(file) as unknown
+    const raw = registryJson as unknown
     if (!Array.isArray(raw)) return []
     return raw
       .filter(

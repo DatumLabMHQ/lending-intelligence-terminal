@@ -125,7 +125,7 @@ export default async function RatesPage() {
 
       <CiteThisPage
         pageTitle="Rate Monitor · DeFi vs T-bill"
-        pageUrl="https://lending-intelligence-terminal.vercel.app/rates"
+        pageUrl="https://lending-intelligence-terminal.datumlabs.workers.dev/rates"
       />
       <AsOfFooter
         timestamp={data.fetchedAt}

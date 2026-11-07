@@ -6,15 +6,16 @@
  *   2. Parse frontmatter (gray-matter, inside getIssueBySlug)
  *   3. Wrap rendering in <IssueProvider> so propless components like
  *      <Hero /> and <CiteWidget /> can read frontmatter via context
- *   4. Compile MDX with next-mdx-remote/rsc, providing the components map
+ *   4. Render the MDX body (precompiled at build by scripts/bundle-content.mjs,
+ *      since Workers forbid the runtime eval next-mdx-remote needs),
+ *      providing the components map
  *
  * Static generation: generateStaticParams enumerates all published slugs
  * so each issue is built once at deploy time.
  */
 import { notFound } from "next/navigation"
 import type { Metadata } from "next"
-import { MDXRemote } from "next-mdx-remote/rsc"
-import remarkGfm from "remark-gfm"
+import { REPORT_MDX } from "@/lib/generated/report-mdx"
 import { getIssueBySlug } from "@/lib/reports/getIssueBySlug"
 import { getAllIssues } from "@/lib/reports/getAllIssues"
 import { SectionHeading } from "@/components/report/SectionHeading"
@@ -55,7 +56,7 @@ export const dynamicParams = true
 export const maxDuration = 120
 
 interface RouteParams {
-  params: { slug: string }
+  params: Promise<{ slug: string }>
 }
 
 /** "Next issue arrives June 7, 2026" — assumes monthly cadence on the
@@ -81,10 +82,11 @@ export async function generateStaticParams() {
   return [] as Array<{ slug: string }>
 }
 
-const SITE_URL = "https://lending-intelligence-terminal.vercel.app"
+const SITE_URL = "https://lending-intelligence-terminal.datumlabs.workers.dev"
 
 export async function generateMetadata({ params }: RouteParams): Promise<Metadata> {
-  const issue = await getIssueBySlug(params.slug)
+  const { slug } = await params
+  const issue = await getIssueBySlug(slug)
   if (!issue) return { title: "Issue not found · DatumLabs Reports" }
   const fm = issue.frontmatter
   const title = `${fm.title} · Issue ${fm.issue_label} · ${fm.theme}`
@@ -104,9 +106,8 @@ export async function generateMetadata({ params }: RouteParams): Promise<Metadat
     alternates: {
       canonical: url,
       types: {
-        "application/rss+xml": [
-          { url: `${SITE_URL}/reports/feed.xml`, title: "DatumLabs Reports" },
-        ],
+        // vinext only accepts string | URL here (no {url,title}[] descriptors).
+        "application/rss+xml": `${SITE_URL}/reports/feed.xml`,
       },
     },
     openGraph: {
@@ -140,8 +141,9 @@ export async function generateMetadata({ params }: RouteParams): Promise<Metadat
 }
 
 export default async function IssuePage({ params }: RouteParams) {
+  const { slug } = await params
   const [issue, allIssues] = await Promise.all([
-    getIssueBySlug(params.slug),
+    getIssueBySlug(slug),
     getAllIssues(),
   ])
   if (!issue) notFound()
@@ -168,6 +170,9 @@ export default async function IssuePage({ params }: RouteParams) {
   const idx = sortedAsc.findIndex((i) => i.slug === issue.slug)
   const prev = idx > 0 ? sortedAsc[idx - 1] : null
   const next = idx >= 0 && idx < sortedAsc.length - 1 ? sortedAsc[idx + 1] : null
+
+  const MDXBody = REPORT_MDX[issue.slug]
+  if (!MDXBody) notFound()
 
   const fm = issue.frontmatter
   const pageUrl = `${SITE_URL}/reports/${issue.slug}`
@@ -247,23 +252,9 @@ export default async function IssuePage({ params }: RouteParams) {
       {/* Article body — single centered reading column. */}
       <article className="report-prose" aria-labelledby="issue-title">
         <div className="report-article-column" style={{ paddingTop: 48, paddingBottom: 64 }}>
-          <MDXRemote
-            source={issue.body}
-            components={components}
-            options={{
-              mdxOptions: {
-                remarkPlugins: [remarkGfm],
-              },
-              parseFrontmatter: false,
-              // Issue MDX is authored in-repo (not user-submitted content),
-              // so JSX expressions like `rows={[…]}` and `columns={[…]}`
-              // are required for the DataTable / Chart components to
-              // receive their props. v6 of next-mdx-remote defaults
-              // blockJS to true; we opt out for trusted content.
-              blockJS: false,
-              blockDangerousJS: false,
-            }}
-          />
+          {/* Compiled at build time with remark-gfm; JS expressions in the
+              in-repo MDX (rows={[…]}, columns={[…]}) are kept. */}
+          <MDXBody components={components} />
           <SupportPanel />
         </div>
       </article>
