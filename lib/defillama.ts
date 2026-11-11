@@ -6,6 +6,8 @@
  * Fees:      https://api.llama.fi/summary/fees/<slug>?dataType=dailyFees
  */
 
+import { pickMember } from "./json-slice"
+
 export interface DayPoint {
   /** Unix seconds (UTC midnight) */
   timestamp: number
@@ -66,7 +68,7 @@ interface LlamaChainEntry {
 type LlamaChainTvls = Record<string, LlamaChainEntry>
 
 interface LlamaProtocolResponse {
-  name: string
+  name?: string
   chainTvls: LlamaChainTvls
   currentChainTvls?: Record<string, number>
 }
@@ -135,9 +137,38 @@ async function fetchJson<T>(url: string, attempt = 0): Promise<T> {
   }
 }
 
+/**
+ * /protocol/<slug>, keeping only the members fetchProtocolHistory reads. The full responses are up
+ * to 36 MB and parse to over 100 MB, past the Workers 128 MB memory limit; see lib/json-slice.ts.
+ */
+async function fetchProtocolSlim(slug: string, attempt = 0): Promise<LlamaProtocolResponse> {
+  const url = `${LLAMA_BASE}/protocol/${slug}`
+  try {
+    const res = await fetch(url, { cache: "no-store" })
+    if (!res.ok) {
+      const err: any = new Error(`DefiLlama ${res.status} for ${url}`)
+      err.httpStatus = res.status
+      throw err
+    }
+    const text = await res.text()
+    return {
+      chainTvls: pickMember<LlamaChainTvls>(text, "chainTvls", ["Ethereum", "Ethereum-borrowed"]) ?? {},
+      currentChainTvls: pickMember<Record<string, number>>(text, "currentChainTvls"),
+    }
+  } catch (err: any) {
+    const status = err?.httpStatus as number | undefined
+    const isClientError = typeof status === "number" && status >= 400 && status < 500
+    if (!isClientError && attempt < 2) {
+      await new Promise((r) => setTimeout(r, 500 * (attempt + 1)))
+      return fetchProtocolSlim(slug, attempt + 1)
+    }
+    throw err
+  }
+}
+
 export async function fetchProtocolHistory(slug: string): Promise<ProtocolHistory> {
   const [protocol, feesJson, userFeesJson] = await Promise.all([
-    fetchJson<LlamaProtocolResponse>(`${LLAMA_BASE}/protocol/${slug}`),
+    fetchProtocolSlim(slug),
     fetchFeesSummary(slug).catch(() => null),
     // dailyUserFees = interest paid by borrowers — Tier 1 sector-size metric.
     fetchJson<LlamaFeesResponse>(
@@ -554,12 +585,16 @@ export async function fetchFeeBreakdown(slug: string): Promise<FeeBreakdown> {
 
 /** Fetch history for all protocols in parallel. Failures are swallowed per-protocol so one bad slug doesn't break the page. */
 export async function fetchAllProtocolHistory(slugs: string[]): Promise<Array<ProtocolHistory | null>> {
-  return Promise.all(
-    slugs.map((s) =>
-      fetchProtocolHistory(s).catch((err) => {
+  // One protocol at a time: each raw /protocol body is held in memory while it's sliced, and the
+  // largest is ~36 MB, so fetching all six at once would exceed the Workers 128 MB limit.
+  const out: Array<ProtocolHistory | null> = []
+  for (const s of slugs) {
+    out.push(
+      await fetchProtocolHistory(s).catch((err) => {
         console.error(`[defillama] ${s}:`, err.message)
         return null
       }),
-    ),
-  )
+    )
+  }
+  return out
 }
